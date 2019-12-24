@@ -1,6 +1,6 @@
 import cv2
 import time
-import sys
+import sys,threading
 class Spy:
     def __init__(self,vlen):
         self.vlen = vlen
@@ -39,14 +39,16 @@ class Shower:
         cv2.imshow('SpyOnYou', frame)
         cv2.waitKey(1)
 if __name__ == "__main__":
+    length_per_video = 0
     if len(sys.argv) !=2:
         print("单个视频长度未指定，以分钟为单位。")
         exit()
     else:
-        length_per_video = sys.argv[1]
+        length_per_video = float(sys.argv[1])
     print("监控开始")
     s = Spy(length_per_video)
     sh = Shower()
+    # _thread.start_new_thread(sh.show(frame))
     while True:#开启无尽循环
         now = time.localtime()
         path = "{}{:0>2d}{:0>2d}_{:0>2d}{:0>2d}{:0>2d}.mp4".format(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour,now.tm_min, now.tm_sec)
@@ -68,4 +70,5 @@ if __name__ == "__main__":
             i = i + 1
             if i == s.video_len:
                 out.release()
+                print(path,"saved")
                 break
