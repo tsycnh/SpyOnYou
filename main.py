@@ -1,6 +1,8 @@
 import cv2
 import time
 import sys,threading
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 class Spy:
     def __init__(self,vlen):
         self.vlen = vlen
@@ -12,12 +14,23 @@ class Spy:
     def get_frame(self):
         if self.cap.isOpened():
             ret,frame = self.cap.read()
-            return ret,frame
+            frame=self.add_time(frame)
 
+            return ret,frame
+    def add_time(self,frame):
+        now = time.localtime()
+        now_str = "{}年{:0>2d}月{:0>2d}日 {:0>2d}:{:0>2d}:{:0>2d}".format(now.tm_year, now.tm_mon, now.tm_mday,
+                                                            now.tm_hour, now.tm_min, now.tm_sec)
+        frame_PIL = Image.fromarray(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
+        font = ImageFont.truetype("./Alibaba-PuHuiTi-Light.ttf",20)
+        draw = ImageDraw.Draw(frame_PIL)
+        draw.text((10,15), now_str,font=font, fill=(255,255,255))
+        # frame = cv2.putText(frame, now_str,(0,20),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255))
+        frame = cv2.cvtColor(np.asarray(frame_PIL),cv2.COLOR_RGB2BGR)
+        return frame
     def release(self):
         self.cap.release()
         print('over')
-
 
 class Writer:
     def __init__(self,fps,width,height,name):
@@ -31,13 +44,13 @@ class Writer:
     def release(self):
         self.out.release()
 
-
 class Shower:
     def __init__(self):
         pass
     def show(self,frame):
         cv2.imshow('SpyOnYou', frame)
         cv2.waitKey(1)
+        
 if __name__ == "__main__":
     length_per_video = 0
     if len(sys.argv) !=2:
